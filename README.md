@@ -2,7 +2,7 @@
 
 A field-tested library of **12 production telemetry diagnostic playbooks** and a **B2B Implementation Health Check Matrix** built for **Technical Customer Success Managers (TCSMs)**, **Customer Success Engineers (CSEs)**, and **Solutions Engineers**.
 
-Every playbook in this repository was diagnosed live against a full-stack Next.js + Node.js SaaS application (`HogHabits`) instrumented with client-side (`posthog-js`) and server-side (`posthog-node`) SDKs, reverse proxies, group analytics, feature flags, and A/B experiments.
+Every playbook in this repository was reproduced and diagnosed live inside PostHog's official GTM & Customer Success diagnostic lab environment (`hoglabs-gtm`), simulating 12 real-world production failure modes across a full-stack Next.js + Node.js SaaS application (`HogHabits`) instrumented with client-side (`posthog-js`) and server-side (`posthog-node`) SDKs, reverse proxies, group analytics, feature flags, and A/B experiments.
 
 ---
 
@@ -48,3 +48,4 @@ Every customer ticket follows a structured four-step triage framework:
 ## Additional Reference
 
 * **[B2B Implementation Health Check Matrix](./B2B-IMPLEMENTATION-CHECKLIST.md):** Pre-call technical audit checklist covering ingestion proxies, identity stitching, B2B group schemas, flag hydration/bootstrapping, and security hygiene.
+
