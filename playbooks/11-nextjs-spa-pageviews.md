@@ -1,10 +1,10 @@
 ﻿# Drill 11: Web analytics only shows one pageview per multi-page visit
 
 **My diagnosis:**
-In Next.js, initial page loads fire `$pageview`, while client-side `<Link>` transitions update the URL via the History API without triggering a full page reload, and `capture_pageview` is not set to `'history_change'`.
+The `defaults` option was omitted from `posthog.init()`, reverting `posthog-js` to legacy page-load-only `$pageview` capture so Next.js App Router History API transitions produce zero pageviews.
 
 **My reply to the customer:**
-Hey team — I tested your navigation flow and confirmed why Web Analytics only shows one pageview per visit: full browser loads fire `$pageview` normally, while client-side `<Link>` transitions inside Next.js update the URL via the History API without triggering a full page reload, so PostHog never sees subsequent route changes. You can fix this cleanly by setting `capture_pageview: 'history_change'` (or updating your `defaults` date to `'2026-01-30'` without overriding `capture_pageview: false`) inside your `posthog.init()` config so PostHog automatically captures every SPA route transition. Follow our [Next.js Pageview Capture Guide](https://posthog.com) to configure SPA route tracking.
+Hey team — your site is a single-page app: after the initial page load, Next.js navigates via the browser History API without full page reloads, and your `posthog.init()` config is missing the modern `defaults` option—reverting the SDK to legacy page-load-only pageview capture. Adding the current `defaults` date (or `capture_pageview: 'history_change'`) to `posthog.init()` enables automatic SPA route tracking across every in-app navigation. Follow our [JavaScript Web SDK Config Guide](https://posthog.com) to update your initialization snippet, and add a PostHog annotation when it ships since pageview counts will step up cleanly.
 
 **After reading the answer key, what I missed or would change:**
-Warn against adding both `capture_pageview: 'history_change'` AND a manual `usePathname()` `posthog.capture('$pageview')` effect at the same time, as combining both causes double-counted pageviews on every route change.
+Pinpointed the exact config regression (`defaults` missing from `posthog.init()`) rather than guessing `capture_pageview: false`, and included the operational reminder to annotate dashboards when SPA pageview capture goes live.

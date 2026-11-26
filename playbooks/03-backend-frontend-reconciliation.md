@@ -1,10 +1,10 @@
 ﻿# Drill 3: Backend check-ins don't reconcile with frontend users
 
 **My diagnosis:**
-Server-side `habit_checked_in` events are arriving in PostHog with zero data loss, but they are all captured under a single hardcoded `distinctId: 'hoghabits-backend'` instead of the authenticated user's email/ID, leaving real user profiles with zero check-in events.
+Server-side `habit_checked_in` events are arriving in PostHog with zero data loss, but the backend captures every check-in under a single hardcoded service identity (`distinctId: 'hoghabits-backend'`) instead of the acting user's ID.
 
 **My reply to the customer:**
-Hey team — good news first: zero data is being dropped. All of your `habit_checked_in` events are arriving in PostHog cleanly, but they are being captured under a single hardcoded **`distinctId: 'hoghabits-backend'`** instead of each user's actual identifier. Because your frontend calls `posthog.identify(email)` while your backend logs every check-in under that shared service ID, PostHog treats them as separate profiles. You can resolve this by passing the authenticated user's real identifier (e.g., `distinctId: email` or their database user ID) into your server-side `posthog.capture()` call so backend and frontend events stitch onto the same person. Follow our [Identifying Users Guide](https://posthog.com) to align client and server IDs.
+Hey team — good news first: zero data is being dropped. All of your `habit_checked_in` events are arriving in PostHog cleanly, but your backend is capturing them under a single hardcoded **`distinctId: 'hoghabits-backend'`** rather than the acting user's ID, so check-ins pile up on one synthetic service profile instead of individual users. Passing the same user identifier your frontend uses (email or database user ID) into your server-side `capture()` calls will stitch both halves of the journey onto one timeline going forward. Follow our [Node.js Server-Side Capture Guide](https://posthog.com) to pass user IDs consistently.
 
 **After reading the answer key, what I missed or would change:**
-Note that historical events sent under `'hoghabits-backend'` cannot be split retroactively across individual users—merging `'hoghabits-backend'` would collapse every user into one giant person, so only fix the ID going forward and exclude `'hoghabits-backend'` from user-level insights.
+Clarify up front that historical events captured under `'hoghabits-backend'` cannot be re-attributed retroactively across individual users—and never merge `'hoghabits-backend'` into a real user, as that would collapse all users together.

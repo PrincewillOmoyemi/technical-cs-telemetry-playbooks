@@ -1,10 +1,10 @@
 ﻿# Drill 7: Event feed feels like unusable autocapture noise
 
 **My diagnosis:**
-The frontend relies almost exclusively on raw `$autocapture` DOM click events and `$pageview` without defining Actions or instrumenting named custom lifecycle events (`habit_created`, `teammate_invited`, `upgrade_clicked`).
+Nothing is technically broken—autocapture is active and custom events were never instrumented (or were stripped out), leaving 100% raw `$autocapture` and `$pageview` events with zero defined Actions or named business milestones.
 
 **My reply to the customer:**
-Hey team — I looked at your live event stream and spotted why it feels noisy: almost your entire frontend is relying on raw **`$autocapture` DOM clicks** and `$pageview` events without named custom events or defined Actions. Autocapture is great as a safety net, but without naming your core milestones (`workspace_created`, `habit_created`, `teammate_invited`, `upgrade_clicked`), every chart looks like generic button clicks. The fastest way to get immediate value today—with zero code changes—is to define **Actions** in Data Management for your key buttons; Actions are retroactive, so your past 6 months of autocapture will immediately populate funnels while your engineers add clean `posthog.capture()` events for your top 4–5 lifecycle milestones. Follow our [Actions Setup Guide](https://posthog.com) to label your key interactions retroactively.
+Hey team — nothing is broken in your setup, what's missing is a semantic layer on top of raw capture: right now your feed is almost entirely raw `$autocapture` button clicks and `$pageview` events with zero Actions or named custom events to build funnels from. You can unlock immediate value today with zero code changes by defining **Actions** in Data Management for your key clicks—Actions apply retroactively to the 6 months of autocapture data you already have—while your engineers instrument clean `posthog.capture()` events at your 3–5 core lifecycle moments (signup, activation, invite, upgrade). Follow our [Complete Guide to Event Tracking](https://posthog.com) to structure a lean event taxonomy.
 
 **After reading the answer key, what I missed or would change:**
-Also recommend enabling "Filter out internal and test users" and building a focused 4-chart Core Activation Dashboard so the team stops reading the raw live Activity firehose as their primary analytics view.
+Per PostHog's Basic Implementation Review guidelines, autocapture with zero Actions defined is the #1 indicator of low value realization—framing the fix as "5 core events, not 50" keeps the engineering lift small and actionable.

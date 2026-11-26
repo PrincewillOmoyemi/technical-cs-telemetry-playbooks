@@ -1,10 +1,10 @@
 ﻿# Drill 1: Event bill tripled with no new features
 
 **My diagnosis:**
-The `/habits` page is firing repeated `$set` (Set person properties) events every few seconds on a background interval loop while the tab sits open, even when no user properties changed. Because person-property updates count as billable events, the polling loop multiplies monthly volume.
+The `/habits` page fires repeated `$set` (Set person properties) events every second while the tab sits open because `posthog.identify()` is placed inside the React component render body alongside a live "active now" clock ticker and a changing `last_active` timestamp.
 
 **My reply to the customer:**
-Hey team — I took a look at your live event stream and found what's driving the volume spike: your `/habits` page is firing repeated **`$set` (Set person properties)** events every few seconds on a background timer while the tab sits open, even when nothing has changed. Because each person-property update counts as a billable event, that polling loop is multiplying your monthly volume. You can resolve this immediately by removing `posthog.setPersonProperties()` (or `posthog.identify()`) from that recurring `setInterval` / render loop so it only fires once when a user's profile or plan actually updates. Follow our [Person Properties Setup Guide](https://posthog.com) to update attributes only when values change.
+Hey team — I found what's driving the volume spike: your `/habits` page is calling `posthog.identify()` inside the component render path rather than once at login, so every re-render emits another event. Two details worth knowing: the events show up as `$set` rather than `$identify` because PostHog recognizes the user is already identified and falls through to a person-property update, and passing a changing `last_active` timestamp makes every render look like new data—defeating PostHog's built-in duplicate-call deduplication. Moving `identify()` into your login handler and dropping the timestamp from person properties will bring your volume back down immediately. Follow our [Identify Best Practices Guide](https://posthog.com) to keep person updates lean.
 
 **After reading the answer key, what I missed or would change:**
-Check whether `posthog.identify()` is also called inside the same render/effect loop, and note that explicit `setPersonProperties()` calls in a timer bypass SDK deduplication and bill on every tick.
+Initially inferred a `setInterval` calling `setPersonProperties()` from seeing `$set` in the Activity feed; inspecting the event properties reveals the true two-layer mechanic: `identify()` in a React render loop falls through to `$set` once identified, and a changing `last_active` timestamp bypasses SDK deduplication.

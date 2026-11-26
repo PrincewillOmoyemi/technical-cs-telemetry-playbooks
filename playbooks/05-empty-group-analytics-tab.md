@@ -1,10 +1,10 @@
 ﻿# Drill 5: Group analytics enabled, but workspace view is empty
 
 **My diagnosis:**
-Enabling Group Analytics in billing/settings turns on the UI schema, but neither the client (`posthog.group()`) nor the server (`groups: { workspace }`) is attaching `$groups` / `$group_0` to outgoing events, so PostHog cannot roll user events up to a workspace.
+Group analytics is enabled on the account, but none of the three required group wires exist in code: no client `posthog.group()` on login, no server `groupIdentify()`, and no per-event `groups` parameter on server-side `capture()` calls.
 
 **My reply to the customer:**
-Hey team — I checked your live event stream and found why the Workspace tab is empty: turning on the Group Analytics add-on enables the company view in PostHog, but your incoming events don't have a `$groups` (or `$group_0`) property attached yet, so PostHog can't roll user activity up to a workspace. To populate the workspace view immediately, call `posthog.group('workspace', workspaceId)` on the client right after signup/login so browser events inherit the workspace context, and include `groups: { workspace: workspaceId }` in your server-side `posthog.capture()` calls. Follow our [Group Analytics Setup Guide](https://posthog.com#how-to-set-up-group-analytics) for client and server examples.
+Hey team — Group Analytics is enabled on your account, but your SDKs aren't attaching group context to events yet, so PostHog has nothing to aggregate in the Workspace tab. It needs two small additions: call `posthog.group('workspace', workspaceId)` in the browser when a user logs in (which links all subsequent session events), and pass `groups: { workspace: workspaceId }` on every server-side `capture()` call (since the server SDK is stateless between requests). Follow our [Group Analytics Setup Guide](https://posthog.com) for exact client and server snippets.
 
 **After reading the answer key, what I missed or would change:**
-Remind the customer that `posthog-node` on the backend is stateless—unlike `posthog-js` in the browser, every server-side `capture()` call must explicitly pass `groups: { workspace }`.
+Always verify event properties (`$groups` / `$group_0`) before replying: events lacking `$groups` means missing code instrumentation (a support fix), whereas events carrying `$groups` with a locked/empty tab means the Group Analytics add-on isn't enabled yet (a billing conversation).
